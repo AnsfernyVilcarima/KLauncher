@@ -24,10 +24,12 @@ module karrito.launcher {
     opens org.klauncher.launcher to javafx.fxml;
 
     // Required for JSON serialization
+    opens org.klauncher.launcher.models to com.fasterxml.jackson.databind;
 
     // Export main packages
     exports org.klauncher.launcher;
     exports org.klauncher.launcher.controllers;
+    exports org.klauncher.launcher.models;
     exports org.klauncher.launcher.services;
     exports org.klauncher.launcher.utils;
 }

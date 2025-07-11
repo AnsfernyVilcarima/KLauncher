@@ -1,4 +1,4 @@
-package org.klauncher.launcher.models;
+package org.klauncher.launcher.utils;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
