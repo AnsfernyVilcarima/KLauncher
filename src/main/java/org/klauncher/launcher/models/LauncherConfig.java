@@ -1,245 +1,234 @@
 package org.klauncher.launcher.models;
 
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.nio.file.*;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.function.Consumer;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-public class FileUtils {
-    private static final Logger logger = LoggerFactory.getLogger(FileUtils.class);
+/**
+ * Configuración del launcher que se guarda en archivo JSON
+ */
+public class LauncherConfig {
+    private static final Logger logger = LoggerFactory.getLogger(LauncherConfig.class);
+    private static final String CONFIG_FILE_NAME = "launcher-config.json";
 
-    /**
-     * Calcula el hash SHA-256 de un archivo
-     */
-    public static String calculateSHA256(Path filePath) throws IOException {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            try (InputStream is = Files.newInputStream(filePath)) {
-                byte[] buffer = new byte[8192];
-                int bytesRead;
-                while ((bytesRead = is.read(buffer)) != -1) {
-                    digest.update(buffer, 0, bytesRead);
-                }
-            }
+    @JsonProperty("gameDirectory")
+    private String gameDirectory;
 
-            byte[] hashBytes = digest.digest();
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hashBytes) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-                hexString.append(hex);
-            }
+    @JsonProperty("javaPath")
+    private String javaPath;
 
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA-256 algorithm not available", e);
-        }
+    @JsonProperty("maxMemoryMb")
+    private int maxMemoryMb;
+
+    @JsonProperty("minMemoryMb")
+    private int minMemoryMb;
+
+    @JsonProperty("lastUsername")
+    private String lastUsername;
+
+    @JsonProperty("autoLogin")
+    private boolean autoLogin;
+
+    @JsonProperty("rememberCredentials")
+    private boolean rememberCredentials;
+
+    @JsonProperty("launcherVersion")
+    private String launcherVersion;
+
+    @JsonProperty("gameVersion")
+    private String gameVersion;
+
+    @JsonProperty("serverUrl")
+    private String serverUrl;
+
+    // Constructor por defecto
+    public LauncherConfig() {
+        // Valores por defecto
+        this.gameDirectory = Paths.get(System.getProperty("user.home"), ".karrito").toString();
+        this.javaPath = System.getProperty("java.home");
+        this.maxMemoryMb = 2048;
+        this.minMemoryMb = 512;
+        this.lastUsername = "";
+        this.autoLogin = false;
+        this.rememberCredentials = false;
+        this.launcherVersion = "1.0.0";
+        this.gameVersion = "1.20.1";
+        this.serverUrl = "https://api.karrito.com";
+    }
+
+    // Getters y Setters
+    public String getGameDirectory() {
+        return gameDirectory;
+    }
+
+    public void setGameDirectory(String gameDirectory) {
+        this.gameDirectory = gameDirectory;
+    }
+
+    public String getJavaPath() {
+        return javaPath;
+    }
+
+    public void setJavaPath(String javaPath) {
+        this.javaPath = javaPath;
+    }
+
+    public int getMaxMemoryMb() {
+        return maxMemoryMb;
+    }
+
+    public void setMaxMemoryMb(int maxMemoryMb) {
+        this.maxMemoryMb = maxMemoryMb;
+    }
+
+    public int getMinMemoryMb() {
+        return minMemoryMb;
+    }
+
+    public void setMinMemoryMb(int minMemoryMb) {
+        this.minMemoryMb = minMemoryMb;
+    }
+
+    public String getLastUsername() {
+        return lastUsername;
+    }
+
+    public void setLastUsername(String lastUsername) {
+        this.lastUsername = lastUsername;
+    }
+
+    public boolean isAutoLogin() {
+        return autoLogin;
+    }
+
+    public void setAutoLogin(boolean autoLogin) {
+        this.autoLogin = autoLogin;
+    }
+
+    public boolean isRememberCredentials() {
+        return rememberCredentials;
+    }
+
+    public void setRememberCredentials(boolean rememberCredentials) {
+        this.rememberCredentials = rememberCredentials;
+    }
+
+    public String getLauncherVersion() {
+        return launcherVersion;
+    }
+
+    public void setLauncherVersion(String launcherVersion) {
+        this.launcherVersion = launcherVersion;
+    }
+
+    public String getGameVersion() {
+        return gameVersion;
+    }
+
+    public void setGameVersion(String gameVersion) {
+        this.gameVersion = gameVersion;
+    }
+
+    public String getServerUrl() {
+        return serverUrl;
+    }
+
+    public void setServerUrl(String serverUrl) {
+        this.serverUrl = serverUrl;
     }
 
     /**
-     * Verifica si un archivo existe y tiene el hash correcto
+     * Carga la configuración desde archivo
      */
-    public static boolean verifyFileIntegrity(Path filePath, String expectedHash) {
-        if (!Files.exists(filePath)) {
-            logger.debug("Archivo no existe: {}", filePath);
-            return false;
+    public static LauncherConfig load() {
+        Path configPath = getConfigPath();
+
+        if (!Files.exists(configPath)) {
+            logger.info("Archivo de configuración no existe, creando configuración por defecto");
+            LauncherConfig defaultConfig = new LauncherConfig();
+            defaultConfig.save();
+            return defaultConfig;
         }
 
         try {
-            String actualHash = calculateSHA256(filePath);
-            boolean isValid = actualHash.equals(expectedHash);
-
-            if (!isValid) {
-                logger.warn("Hash incorrecto para archivo: {}. Esperado: {}, Actual: {}",
-                        filePath, expectedHash, actualHash);
-            }
-
-            return isValid;
+            ObjectMapper mapper = new ObjectMapper();
+            LauncherConfig config = mapper.readValue(configPath.toFile(), LauncherConfig.class);
+            logger.info("Configuración cargada desde: {}", configPath);
+            return config;
         } catch (IOException e) {
-            logger.error("Error al verificar integridad del archivo: {}", filePath, e);
-            return false;
+            logger.error("Error al cargar configuración, usando valores por defecto", e);
+            return new LauncherConfig();
         }
     }
 
     /**
-     * Copia un archivo con callback de progreso
+     * Guarda la configuración en archivo
      */
-    public static void copyFileWithProgress(Path source, Path destination, Consumer<Long> progressCallback) throws IOException {
-        logger.debug("Copiando archivo: {} -> {}", source, destination);
+    public void save() {
+        Path configPath = getConfigPath();
 
-        Files.createDirectories(destination.getParent());
-
-        long totalSize = Files.size(source);
-        long copiedBytes = 0;
-
-        try (InputStream in = Files.newInputStream(source);
-             OutputStream out = Files.newOutputStream(destination)) {
-
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-
-            while ((bytesRead = in.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
-                copiedBytes += bytesRead;
-
-                if (progressCallback != null) {
-                    progressCallback.accept(copiedBytes);
-                }
-            }
-        }
-
-        logger.debug("Archivo copiado exitosamente: {}", destination);
-    }
-
-    /**
-     * Extrae un archivo ZIP con callback de progreso
-     */
-    public static void extractZipWithProgress(Path zipFile, Path destinationDir,
-                                              Consumer<String> progressCallback) throws IOException {
-        logger.info("Extrayendo archivo ZIP: {} -> {}", zipFile, destinationDir);
-
-        Files.createDirectories(destinationDir);
-
-        try (InputStream fileIn = Files.newInputStream(zipFile);
-             BufferedInputStream bufferedIn = new BufferedInputStream(fileIn);
-             ZipArchiveInputStream zipIn = new ZipArchiveInputStream(bufferedIn)) {
-
-            ZipArchiveEntry entry;
-            while ((entry = zipIn.getNextZipEntry()) != null) {
-                Path entryPath = destinationDir.resolve(entry.getName());
-
-                // Verificar que el archivo se extraiga dentro del directorio destino
-                if (!entryPath.normalize().startsWith(destinationDir.normalize())) {
-                    throw new IOException("Entrada ZIP fuera del directorio destino: " + entry.getName());
-                }
-
-                if (progressCallback != null) {
-                    progressCallback.accept(entry.getName());
-                }
-
-                if (entry.isDirectory()) {
-                    Files.createDirectories(entryPath);
-                } else {
-                    Files.createDirectories(entryPath.getParent());
-
-                    try (OutputStream out = Files.newOutputStream(entryPath)) {
-                        byte[] buffer = new byte[8192];
-                        int bytesRead;
-                        while ((bytesRead = zipIn.read(buffer)) != -1) {
-                            out.write(buffer, 0, bytesRead);
-                        }
-                    }
-                }
-            }
-        }
-
-        logger.info("Archivo ZIP extraído exitosamente");
-    }
-
-    /**
-     * Elimina un directorio y todo su contenido
-     */
-    public static void deleteDirectory(Path directory) throws IOException {
-        if (!Files.exists(directory)) {
-            return;
-        }
-
-        logger.debug("Eliminando directorio: {}", directory);
-
-        Files.walk(directory)
-                .sorted((path1, path2) -> path2.compareTo(path1)) // Orden reverso para eliminar archivos antes que directorios
-                .forEach(path -> {
-                    try {
-                        Files.delete(path);
-                    } catch (IOException e) {
-                        logger.warn("No se pudo eliminar: {}", path, e);
-                    }
-                });
-
-        logger.debug("Directorio eliminado: {}", directory);
-    }
-
-    /**
-     * Obtiene el tamaño total de un directorio
-     */
-    public static long getDirectorySize(Path directory) throws IOException {
-        if (!Files.exists(directory)) {
-            return 0;
-        }
-
-        return Files.walk(directory)
-                .filter(Files::isRegularFile)
-                .mapToLong(path -> {
-                    try {
-                        return Files.size(path);
-                    } catch (IOException e) {
-                        logger.warn("Error al obtener tamaño del archivo: {}", path, e);
-                        return 0;
-                    }
-                })
-                .sum();
-    }
-
-    /**
-     * Crea un directorio si no existe
-     */
-    public static void ensureDirectoryExists(Path directory) throws IOException {
-        if (!Files.exists(directory)) {
-            Files.createDirectories(directory);
-            logger.debug("Directorio creado: {}", directory);
-        }
-    }
-
-    /**
-     * Mueve un archivo de forma segura
-     */
-    public static void moveFile(Path source, Path destination) throws IOException {
-        logger.debug("Moviendo archivo: {} -> {}", source, destination);
-
-        Files.createDirectories(destination.getParent());
-        Files.move(source, destination, StandardCopyOption.REPLACE_EXISTING);
-
-        logger.debug("Archivo movido exitosamente");
-    }
-
-    /**
-     * Verifica si hay suficiente espacio en disco
-     */
-    public static boolean hasEnoughSpace(Path directory, long requiredBytes) {
         try {
-            FileStore fileStore = Files.getFileStore(directory);
-            long availableBytes = fileStore.getUsableSpace();
-
-            logger.debug("Espacio disponible: {} bytes, Requerido: {} bytes",
-                    availableBytes, requiredBytes);
-
-            return availableBytes >= requiredBytes;
+            Files.createDirectories(configPath.getParent());
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writerWithDefaultPrettyPrinter().writeValue(configPath.toFile(), this);
+            logger.info("Configuración guardada en: {}", configPath);
         } catch (IOException e) {
-            logger.warn("Error al verificar espacio en disco", e);
-            return false;
+            logger.error("Error al guardar configuración", e);
         }
     }
 
     /**
-     * Formatea el tamaño en bytes a una cadena legible
+     * Obtiene la ruta del archivo de configuración
      */
-    public static String formatBytes(long bytes) {
-        if (bytes < 1024) {
-            return bytes + " B";
-        } else if (bytes < 1024 * 1024) {
-            return String.format("%.1f KB", bytes / 1024.0);
-        } else if (bytes < 1024 * 1024 * 1024) {
-            return String.format("%.1f MB", bytes / (1024.0 * 1024.0));
-        } else {
-            return String.format("%.1f GB", bytes / (1024.0 * 1024.0 * 1024.0));
+    private static Path getConfigPath() {
+        return Paths.get(System.getProperty("user.home"), ".karrito", CONFIG_FILE_NAME);
+    }
+
+    /**
+     * Valida que la configuración sea correcta
+     */
+    public boolean isValid() {
+        if (gameDirectory == null || gameDirectory.isEmpty()) {
+            return false;
         }
+
+        if (maxMemoryMb < minMemoryMb) {
+            return false;
+        }
+
+        if (minMemoryMb < 256) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Obtiene la ruta del directorio de juego como Path
+     */
+    public Path getGameDirectoryPath() {
+        return Paths.get(gameDirectory);
+    }
+
+    @Override
+    public String toString() {
+        return "LauncherConfig{" +
+                "gameDirectory='" + gameDirectory + '\'' +
+                ", javaPath='" + javaPath + '\'' +
+                ", maxMemoryMb=" + maxMemoryMb +
+                ", minMemoryMb=" + minMemoryMb +
+                ", lastUsername='" + lastUsername + '\'' +
+                ", autoLogin=" + autoLogin +
+                ", rememberCredentials=" + rememberCredentials +
+                ", launcherVersion='" + launcherVersion + '\'' +
+                ", gameVersion='" + gameVersion + '\'' +
+                ", serverUrl='" + serverUrl + '\'' +
+                '}';
     }
 }

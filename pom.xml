@@ -5,7 +5,7 @@
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.example</groupId>
+    <groupId>org.klauncher</groupId>
     <artifactId>KarritoLauncher</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
@@ -102,7 +102,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>org.example.launcher.LauncherApplication</mainClass>
+                    <mainClass>org.klauncher.launcher.LauncherApplication</mainClass>
                 </configuration>
             </plugin>
 
@@ -120,7 +120,7 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>org.example.launcher.LauncherApplication</mainClass>
+                                    <mainClass>org.klauncher.launcher.LauncherApplication</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

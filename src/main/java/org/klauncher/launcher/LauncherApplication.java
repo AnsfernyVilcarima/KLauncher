@@ -17,7 +17,7 @@ public class LauncherApplication extends Application {
         logger.info("Iniciando KarritoLauncher...");
 
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(LauncherApplication.class.getResource("/fxml/main-view.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(LauncherApplication.class.getResource("/fxml/main-view.xml"));
             Scene scene = new Scene(fxmlLoader.load(), 800, 600);
 
             stage.setTitle("Karrito Launcher");

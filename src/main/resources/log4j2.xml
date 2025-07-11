@@ -25,7 +25,7 @@
 
     <Loggers>
         <!-- Logger específico para el proyecto -->
-        <Logger name="org.example.launcher" level="DEBUG" additivity="false">
+        <Logger name="org.klauncher.launcher" level="DEBUG" additivity="false">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="RollingFileAppender"/>
         </Logger>
