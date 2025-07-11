@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<StackPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.klauncher.launcher.controllers.MainController">
+
+    <!-- Fondo principal -->
+    <Region styleClass="cosmic-background" />
+
+    <!-- Contenedor principal centrado -->
+    <VBox alignment="CENTER" spacing="0" maxWidth="500" maxHeight="700">
+
+        <!-- Espaciador superior -->
+        <Region VBox.vgrow="SOMETIMES" minHeight="20" />
+
+        <!-- Panel principal con glassmorphism -->
+        <VBox alignment="CENTER" spacing="25" styleClass="main-panel" maxWidth="450">
+            <padding>
+                <Insets top="40" bottom="40" left="35" right="35" />
+            </padding>
+
+            <!-- Header con título épico -->
+            <VBox alignment="CENTER" spacing="10" styleClass="title-container">
+                <Label fx:id="welcomeText" text="KARRITO" textAlignment="CENTER">
+                    <font>
+                        <Font name="System Bold" size="32" />
+                    </font>
+                </Label>
+                <Label text="LAUNCHER" textAlignment="CENTER" textFill="rgba(255,255,255,0.7)">
+                    <font>
+                        <Font name="System" size="14" />
+                    </font>
+                </Label>
+            </VBox>
+
+            <!-- Espaciador -->
+            <Region minHeight="10" />
+
+            <!-- Panel de perfil moderno -->
+            <VBox alignment="CENTER" spacing="15" styleClass="glass-panel">
+                <padding>
+                    <Insets top="20" bottom="20" left="20" right="20" />
+                </padding>
+
+                <Label text="Profile" textAlignment="CENTER" textFill="rgba(255,255,255,0.8)">
+                    <font>
+                        <Font name="System Bold" size="13" />
+                    </font>
+                </Label>
+
+                <HBox alignment="CENTER" spacing="12" maxWidth="350">
+                    <ComboBox fx:id="profileSelector" prefWidth="250" maxWidth="250"
+                              promptText="Select Profile" styleClass="modern-combo" />
+                    <Button fx:id="createProfileButton" text="+" prefWidth="35" prefHeight="35"
+                            styleClass="circular-button" />
+                </HBox>
+
+                <Label fx:id="profileInfoLabel" text="" textAlignment="CENTER"
+                       wrapText="true" maxWidth="300">
+                    <font>
+                        <Font size="10" />
+                    </font>
+                </Label>
+            </VBox>
+
+            <!-- Panel de autenticación -->
+            <VBox alignment="CENTER" spacing="15" styleClass="glass-panel">
+                <padding>
+                    <Insets top="20" bottom="20" left="20" right="20" />
+                </padding>
+
+                <Label text="Authentication" textAlignment="CENTER" textFill="rgba(255,255,255,0.8)">
+                    <font>
+                        <Font name="System Bold" size="13" />
+                    </font>
+                </Label>
+
+                <VBox alignment="CENTER" spacing="12" maxWidth="300">
+                    <TextField fx:id="usernameField" maxWidth="280"
+                               promptText="Enter your username" styleClass="modern-input" />
+
+                    <Button fx:id="loginButton" text="Authenticate" prefWidth="200" prefHeight="40"
+                            styleClass="auth-button">
+                        <font>
+                            <Font name="System Bold" size="12" />
+                        </font>
+                    </Button>
+                </VBox>
+            </VBox>
+
+            <!-- Botón de jugar épico -->
+            <VBox alignment="CENTER" spacing="15">
+                <Button fx:id="playButton" text="► PLAY" prefWidth="280" prefHeight="55"
+                        styleClass="epic-play-button">
+                    <font>
+                        <Font name="System Bold" size="18" />
+                    </font>
+                </Button>
+
+                <!-- Progress bar moderna -->
+                <ProgressBar fx:id="downloadProgress" prefWidth="320" prefHeight="8"
+                             styleClass="modern-progress" visible="false" />
+            </VBox>
+
+            <!-- Status moderno -->
+            <VBox alignment="CENTER" spacing="8">
+                <Label fx:id="statusLabel" text="Ready to launch" textAlignment="CENTER"
+                       wrapText="true" maxWidth="400" styleClass="status-modern">
+                    <font>
+                        <Font size="12" />
+                    </font>
+                </Label>
+            </VBox>
+        </VBox>
+
+        <!-- Espaciador inferior -->
+        <Region VBox.vgrow="SOMETIMES" minHeight="20" />
+
+        <!-- Footer moderno -->
+        <HBox alignment="CENTER" spacing="20" styleClass="footer-panel">
+            <padding>
+                <Insets top="15" bottom="15" left="20" right="20" />
+            </padding>
+
+            <Button fx:id="settingsButton" text="⚙" prefWidth="40" prefHeight="40"
+                    styleClass="footer-button" />
+
+            <Region HBox.hgrow="ALWAYS" />
+
+            <VBox alignment="CENTER" spacing="2">
+                <Label text="Version 1.0.0" textFill="rgba(255,255,255,0.5)">
+                    <font>
+                        <Font size="9" />
+                    </font>
+                </Label>
+                <Label text="Karrito Team" textFill="rgba(255,255,255,0.4)">
+                    <font>
+                        <Font size="8" />
+                    </font>
+                </Label>
+            </VBox>
+        </HBox>
+    </VBox>
+</StackPane>

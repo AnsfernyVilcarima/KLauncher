@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.klauncher.launcher.controllers.CustomizationController"
+      spacing="15" styleClass="customization-panel">
+
+    <padding>
+        <Insets top="20" bottom="20" left="20" right="20" />
+    </padding>
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="15">
+        <Label text="🎨" styleClass="header-icon">
+            <font>
+                <Font size="24" />
+            </font>
+        </Label>
+        <VBox>
+            <Label text="Personalización Avanzada" styleClass="header-title">
+                <font>
+                    <Font name="System Bold" size="18" />
+                </font>
+            </Label>
+            <Label text="Customiza tu launcher con estilos épicos" styleClass="header-subtitle">
+                <font>
+                    <Font size="11" />
+                </font>
+            </Label>
+        </VBox>
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="closeButton" text="✕" onAction="#onClose" styleClass="close-button" />
+    </HBox>
+
+    <Separator />
+
+    <!-- Scroll Container -->
+    <ScrollPane fitToWidth="true" styleClass="custom-scroll" VBox.vgrow="ALWAYS">
+        <VBox spacing="20">
+            <padding>
+                <Insets right="10" />
+            </padding>
+
+            <!-- Presets Section -->
+            <VBox spacing="10" styleClass="section-panel">
+                <padding>
+                    <Insets top="15" bottom="15" left="15" right="15" />
+                </padding>
+
+                <Label text="🎭 Presets Épicos" styleClass="section-title">
+                    <font>
+                        <Font name="System Bold" size="14" />
+                    </font>
+                </Label>
+
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <ComboBox fx:id="presetComboBox" prefWidth="200" promptText="Selecciona un preset" />
+                    <Button fx:id="applyPresetButton" text="Aplicar" onAction="#onApplyPreset" />
+                    <Button fx:id="randomPresetButton" text="🎲 Aleatorio" onAction="#onRandomPreset" />
+                </HBox>
+            </VBox>
+
+            <!-- Colors Section -->
+            <VBox spacing="10" styleClass="section-panel">
+                <padding>
+                    <Insets top="15" bottom="15" left="15" right="15" />
+                </padding>
+
+                <Label text="🌈 Colores Personalizados" styleClass="section-title">
+                    <font>
+                        <Font name="System Bold" size="14" />
+                    </font>
+                </Label>
+
+                <GridPane hgap="15" vgap="10">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="100" />
+                        <ColumnConstraints minWidth="100" />
+                    </columnConstraints>
+
+                    <Label text="Color Primario:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                    <ColorPicker fx:id="primaryColorPicker" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                    <Label text="Color Secundario:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                    <ColorPicker fx:id="secondaryColorPicker" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                    <Label text="Color de Acento:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                    <ColorPicker fx:id="accentColorPicker" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                </GridPane>
+            </VBox>
+
+            <!-- Background Section -->
+            <VBox spacing="10" styleClass="section-panel">
+                <padding>
+                    <Insets top="15" bottom="15" left="15" right="15" />
+                </padding>
+
+                <Label text="🌌 Fondos de Pantalla" styleClass="section-title">
+                    <font>
+                        <Font name="System Bold" size="14" />
+                    </font>
+                </Label>
+
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <ComboBox fx:id="backgroundComboBox" prefWidth="200" promptText="Selecciona un fondo" />
+                    <Button fx:id="randomBackgroundButton" text="🔀 Aleatorio" onAction="#onRandomBackground" />
+                </HBox>
+            </VBox>
+
+            <!-- Effects Section -->
+            <VBox spacing="10" styleClass="section-panel">
+                <padding>
+                    <Insets top="15" bottom="15" left="15" right="15" />
+                </padding>
+
+                <Label text="✨ Efectos Visuales" styleClass="section-title">
+                    <font>
+                        <Font name="System Bold" size="14" />
+                    </font>
+                </Label>
+
+                <VBox spacing="8">
+                    <CheckBox fx:id="enableAnimationsCheck" text="Animaciones suaves" />
+                    <CheckBox fx:id="enableGlassEffectCheck" text="Efecto cristal (glassmorphism)" />
+                    <CheckBox fx:id="enableParticlesCheck" text="Partículas flotantes" />
+                </VBox>
+
+                <GridPane hgap="15" vgap="10">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="80" />
+                        <ColumnConstraints minWidth="150" />
+                    </columnConstraints>
+
+                    <Label text="Opacidad:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                    <Slider fx:id="opacitySlider" min="30" max="100" value="85"
+                            showTickLabels="true" showTickMarks="true" majorTickUnit="20"
+                            GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                    <Label text="Difuminado:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                    <Slider fx:id="blurSlider" min="0" max="15" value="5"
+                            showTickLabels="true" showTickMarks="true" majorTickUnit="5"
+                            GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                </GridPane>
+            </VBox>
+
+            <!-- Font Section -->
+            <VBox spacing="10" styleClass="section-panel">
+                <padding>
+                    <Insets top="15" bottom="15" left="15" right="15" />
+                </padding>
+
+                <Label text="🔤 Tipografía" styleClass="section-title">
+                    <font>
+                        <Font name="System Bold" size="14" />
+                    </font>
+                </Label>
+
+                <GridPane hgap="15" vgap="10">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="80" />
+                        <ColumnConstraints minWidth="150" />
+                    </columnConstraints>
+
+                    <Label text="Fuente:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                    <ComboBox fx:id="fontComboBox" prefWidth="150"
+                              GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                    <Label text="Tamaño:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                    <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <Slider fx:id="fontSizeSlider" min="8" max="20" value="13"
+                                showTickLabels="true" majorTickUnit="4" prefWidth="120" />
+                        <Label fx:id="fontSizeLabel" text="13px" minWidth="35" />
+                    </HBox>
+                </GridPane>
+            </VBox>
+
+            <!-- Preview Section -->
+            <VBox spacing="10" styleClass="section-panel">
+                <padding>
+                    <Insets top="15" bottom="15" left="15" right="15" />
+                </padding>
+
+                <Label text="👁️ Vista Previa" styleClass="section-title">
+                    <font>
+                        <Font name="System Bold" size="14" />
+                    </font>
+                </Label>
+
+                <VBox fx:id="previewPanel" spacing="10" alignment="CENTER"
+                      styleClass="preview-container" minHeight="100">
+                    <padding>
+                        <Insets top="20" bottom="20" left="20" right="20" />
+                    </padding>
+
+                    <Label fx:id="previewTitle" text="KARRITO LAUNCHER" styleClass="preview-title">
+                        <font>
+                            <Font name="System Bold" size="16" />
+                        </font>
+                    </Label>
+                    <Button fx:id="previewButton" text="▶ PLAY" styleClass="preview-button">
+                        <font>
+                            <Font name="System Bold" size="12" />
+                        </font>
+                    </Button>
+                </VBox>
+            </VBox>
+        </VBox>
+    </ScrollPane>
+
+    <Separator />
+
+    <!-- Control Buttons -->
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button fx:id="resetButton" text="🔄 Reset" onAction="#onReset" styleClass="secondary-button" />
+        <Button fx:id="saveButton" text="💾 Guardar" onAction="#onSave" styleClass="primary-button" />
+        <Button fx:id="applyButton" text="✨ Aplicar" onAction="#onApply" styleClass="accent-button" />
+    </HBox>
+</VBox>

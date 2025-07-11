@@ -2,60 +2,57 @@ package org.klauncher.launcher.controllers;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.event.ActionEvent;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import org.klauncher.launcher.database.DatabaseManager;
 import org.klauncher.launcher.models.config.AdvancedLauncherConfig;
 import org.klauncher.launcher.models.entities.UserProfile;
-import org.klauncher.launcher.services.LauncherService;
-import org.klauncher.launcher.services.ProfileManagerService;
+import org.klauncher.launcher.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class MainController {
     private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 
-    @FXML
-    private Label welcomeText;
+    @FXML private Label welcomeText;
+    @FXML private ComboBox<UserProfile> profileSelector;
+    @FXML private TextField usernameField;
+    @FXML private Button loginButton;
+    @FXML private Button playButton;
+    @FXML private Button createProfileButton;
+    @FXML private Button settingsButton;
+    @FXML private ProgressBar downloadProgress;
+    @FXML private Label statusLabel;
+    @FXML private Label profileInfoLabel;
 
-    @FXML
-    private ComboBox<UserProfile> profileSelector;
+    // Nuevos controles de personalización
+    @FXML private MenuButton themeMenuButton;
+    @FXML private MenuButton backgroundMenuButton;
 
-    @FXML
-    private TextField usernameField;
-
-    @FXML
-    private Button loginButton;
-
-    @FXML
-    private Button playButton;
-
-    @FXML
-    private Button createProfileButton;
-
-    @FXML
-    private Button settingsButton;
-
-    @FXML
-    private ProgressBar downloadProgress;
-
-    @FXML
-    private Label statusLabel;
-
-    @FXML
-    private Label profileInfoLabel;
-
-    // Servicios
+    // Servicios principales
     private LauncherService launcherService;
     private ProfileManagerService profileManagerService;
     private DatabaseManager databaseManager;
     private AdvancedLauncherConfig config;
+
+    // Servicios de personalización
+    private ThemeManagerService themeManager;
+    private BackgroundManagerService backgroundManager;
+    private CustomizationService customizationService;
 
     // Estado
     private UserProfile currentProfile;
@@ -64,14 +61,20 @@ public class MainController {
 
     @FXML
     public void initialize() {
-        logger.info("Inicializando controlador principal mejorado");
+        logger.info("Inicializando controlador principal con personalización completa");
 
         try {
-            // Inicializar servicios
-            initializeServices();
+            // Inicializar servicios core
+            initializeCoreServices();
+
+            // Inicializar servicios de personalización
+            initializeCustomizationServices();
 
             // Configurar UI inicial
             setupInitialUI();
+
+            // Configurar controles de personalización
+            setupCustomizationControls();
 
             // Configurar eventos
             setupEventHandlers();
@@ -79,7 +82,7 @@ public class MainController {
             // Cargar datos
             loadInitialData();
 
-            logger.info("Controlador principal inicializado exitosamente");
+            logger.info("Controlador principal con personalización inicializado exitosamente");
         } catch (Exception e) {
             logger.error("Error al inicializar controlador principal", e);
             showError("Error de Inicialización", "No se pudo inicializar el launcher: " + e.getMessage());
@@ -87,33 +90,54 @@ public class MainController {
     }
 
     /**
-     * Inicializa todos los servicios necesarios
+     * Inicializa servicios principales
      */
-    private void initializeServices() throws SQLException {
-        logger.debug("Inicializando servicios...");
+    private void initializeCoreServices() throws SQLException {
+        logger.debug("Inicializando servicios principales...");
 
-        // Inicializar base de datos
+        // Base de datos
         databaseManager = DatabaseManager.getInstance();
         databaseManager.initialize();
 
-        // Inicializar servicios
+        // Servicios básicos
         profileManagerService = new ProfileManagerService();
         profileManagerService.initialize();
 
         launcherService = new LauncherService();
 
-        // Cargar configuración avanzada
+        // Configuración
         config = AdvancedLauncherConfig.load();
 
-        logger.debug("Servicios inicializados correctamente");
+        logger.debug("Servicios principales inicializados");
+    }
+
+    /**
+     * Inicializa servicios de personalización
+     */
+    private void initializeCustomizationServices() {
+        logger.debug("Inicializando servicios de personalización...");
+
+        // Gestión de temas mejorada
+        themeManager = ThemeManagerService.getInstance();
+        themeManager.initialize(config);
+
+        // Gestión de fondos
+        backgroundManager = BackgroundManagerService.getInstance();
+        backgroundManager.initialize(config);
+
+        // Servicio de personalización integrado
+        customizationService = CustomizationService.getInstance();
+        customizationService.initialize(config);
+
+        logger.debug("Servicios de personalización inicializados");
     }
 
     /**
      * Configura la UI inicial
      */
     private void setupInitialUI() {
-        welcomeText.setText("Karrito Launcher v" + config.getApplication().getLauncherVersion());
-        statusLabel.setText("Listo para comenzar");
+        welcomeText.setText("KARRITO LAUNCHER v" + config.getApplication().getLauncherVersion());
+        statusLabel.setText("Listo para la aventura");
         downloadProgress.setVisible(false);
         playButton.setDisable(true);
 
@@ -123,14 +147,174 @@ public class MainController {
         profileSelector.setCellFactory(param -> new ProfileListCell());
         profileSelector.setButtonCell(new ProfileListCell());
 
-        // Configurar tooltips
-        profileSelector.setTooltip(new Tooltip("Selecciona un perfil para jugar"));
-        createProfileButton.setTooltip(new Tooltip("Crear un nuevo perfil"));
-        settingsButton.setTooltip(new Tooltip("Configuración del launcher"));
+        // Configurar tooltips épicos
+        setupTooltips();
+
+        // Aplicar estilos CSS iniciales
+        applyInitialStyling();
     }
 
     /**
-     * Configura los event handlers
+     * Configura controles de personalización
+     */
+    private void setupCustomizationControls() {
+        // Si los controles existen en el FXML, configurarlos
+        if (themeMenuButton != null) {
+            setupThemeMenu();
+        }
+
+        if (backgroundMenuButton != null) {
+            setupBackgroundMenu();
+        }
+
+        // Agregar funcionalidad avanzada al botón de configuración
+        setupAdvancedSettingsButton();
+    }
+
+    /**
+     * Configura menú de temas
+     */
+    private void setupThemeMenu() {
+        themeMenuButton.setText("🎨 Temas");
+
+        for (ThemeManagerService.Theme theme : ThemeManagerService.Theme.values()) {
+            MenuItem themeItem = new MenuItem(theme.getDisplayName());
+            themeItem.setOnAction(e -> {
+                themeManager.setTheme(theme);
+                showQuickNotification("Tema cambiado a: " + theme.getDisplayName());
+            });
+            themeMenuButton.getItems().add(themeItem);
+        }
+
+        // Separador
+        themeMenuButton.getItems().add(new SeparatorMenuItem());
+
+        // Tema aleatorio
+        MenuItem randomTheme = new MenuItem("🎲 Aleatorio");
+        randomTheme.setOnAction(e -> {
+            themeManager.setRandomTheme();
+            showQuickNotification("¡Tema aleatorio aplicado!");
+        });
+        themeMenuButton.getItems().add(randomTheme);
+    }
+
+    /**
+     * Configura menú de fondos
+     */
+    private void setupBackgroundMenu() {
+        backgroundMenuButton.setText("🌌 Fondos");
+
+        for (BackgroundManagerService.BackgroundType bg : BackgroundManagerService.BackgroundType.values()) {
+            MenuItem bgItem = new MenuItem(bg.getDisplayName());
+            bgItem.setOnAction(e -> {
+                backgroundManager.setBackground(bg);
+                showQuickNotification("Fondo cambiado a: " + bg.getDisplayName());
+            });
+            backgroundMenuButton.getItems().add(bgItem);
+        }
+
+        // Separador
+        backgroundMenuButton.getItems().add(new SeparatorMenuItem());
+
+        // Fondo aleatorio
+        MenuItem randomBg = new MenuItem("🔀 Aleatorio");
+        randomBg.setOnAction(e -> {
+            backgroundManager.setRandomBackground();
+            showQuickNotification("¡Fondo aleatorio aplicado!");
+        });
+        backgroundMenuButton.getItems().add(randomBg);
+    }
+
+    /**
+     * Configura botón de configuración avanzada
+     */
+    private void setupAdvancedSettingsButton() {
+        // Crear menú contextual para el botón de configuración
+        ContextMenu settingsMenu = new ContextMenu();
+
+        // Personalización completa
+        MenuItem customization = new MenuItem("🎨 Personalización Completa");
+        customization.setOnAction(e -> openCustomizationPanel());
+
+        // Cambio rápido de tema
+        MenuItem quickTheme = new MenuItem("🌓 Cambiar Tema");
+        quickTheme.setOnAction(e -> themeManager.cycleTheme());
+
+        // Cambio rápido de fondo
+        MenuItem quickBackground = new MenuItem("🌌 Cambiar Fondo");
+        quickBackground.setOnAction(e -> backgroundManager.setRandomBackground());
+
+        // Toggle animaciones
+        MenuItem toggleAnimations = new MenuItem("✨ Toggle Animaciones");
+        toggleAnimations.setOnAction(e -> {
+            customizationService.toggleAnimations();
+            showQuickNotification("Animaciones " + (config.getUi().isEnableAnimations() ? "activadas" : "desactivadas"));
+        });
+
+        // Toggle efecto cristal
+        MenuItem toggleGlass = new MenuItem("💎 Toggle Efecto Cristal");
+        toggleGlass.setOnAction(e -> {
+            customizationService.toggleGlassEffect();
+            showQuickNotification("Efecto cristal alternado");
+        });
+
+        // Separador
+        SeparatorMenuItem separator = new SeparatorMenuItem();
+
+        // Configuración tradicional
+        MenuItem traditionalSettings = new MenuItem("⚙️ Configuración");
+        traditionalSettings.setOnAction(e -> showTraditionalSettings());
+
+        settingsMenu.getItems().addAll(
+                customization, quickTheme, quickBackground,
+                separator, toggleAnimations, toggleGlass,
+                new SeparatorMenuItem(), traditionalSettings
+        );
+
+        // Configurar clic derecho
+        settingsButton.setContextMenu(settingsMenu);
+
+        // Clic izquierdo abre personalización
+        settingsButton.setOnAction(e -> openCustomizationPanel());
+    }
+
+    /**
+     * Configura tooltips épicos
+     */
+    private void setupTooltips() {
+        profileSelector.setTooltip(new Tooltip("🎭 Selecciona tu perfil de aventurero"));
+        createProfileButton.setTooltip(new Tooltip("➕ Crear nuevo perfil épico"));
+        settingsButton.setTooltip(new Tooltip("🎨 Personalización total del launcher"));
+        playButton.setTooltip(new Tooltip("🚀 ¡Iniciar la aventura!"));
+        loginButton.setTooltip(new Tooltip("🔐 Autenticación de guerrero"));
+    }
+
+    /**
+     * Aplica estilos CSS iniciales
+     */
+    private void applyInitialStyling() {
+        // Aplicar clases CSS épicas a elementos importantes
+        welcomeText.getStyleClass().add("epic-title");
+        playButton.getStyleClass().add("epic-play-button");
+        settingsButton.getStyleClass().add("settings-glow");
+
+        // Registrar escena en servicios de personalización
+        Platform.runLater(() -> {
+            Scene scene = welcomeText.getScene();
+            if (scene != null) {
+                themeManager.registerScene(scene);
+                customizationService.registerScene(scene);
+
+                // Registrar región de fondo
+                if (scene.getRoot() instanceof javafx.scene.layout.Region) {
+                    backgroundManager.registerRegion((javafx.scene.layout.Region) scene.getRoot());
+                }
+            }
+        });
+    }
+
+    /**
+     * Configura event handlers
      */
     private void setupEventHandlers() {
         // Listener para cambio de perfil
@@ -140,14 +324,34 @@ public class MainController {
             }
         });
 
-        // Listener para campo de usuario (solo para perfiles offline)
+        // Listener para campo de usuario
         usernameField.textProperty().addListener((observable, oldValue, newValue) -> {
             updatePlayButtonState();
+        });
+
+        // Keyboard shortcuts épicos
+        Platform.runLater(() -> {
+            Scene scene = welcomeText.getScene();
+            if (scene != null) {
+                scene.setOnKeyPressed(event -> {
+                    switch (event.getCode()) {
+                        case F1 -> openCustomizationPanel();
+                        case F2 -> themeManager.cycleTheme();
+                        case F3 -> backgroundManager.setRandomBackground();
+                        case F5 -> refreshLauncher();
+                        case ESCAPE -> {
+                            if (event.isControlDown()) {
+                                Platform.exit();
+                            }
+                        }
+                    }
+                });
+            }
         });
     }
 
     /**
-     * Carga los datos iniciales
+     * Carga datos iniciales
      */
     private void loadInitialData() {
         CompletableFuture.runAsync(() -> {
@@ -168,6 +372,9 @@ public class MainController {
                         profileSelector.setValue(profiles.get(0));
                         onProfileChanged(profiles.get(0));
                     }
+
+                    // Mostrar mensaje de bienvenida épico
+                    showQuickNotification("¡Bienvenido a Karrito Launcher! Presiona F1 para personalizar");
                 });
 
             } catch (Exception e) {
@@ -180,25 +387,115 @@ public class MainController {
     }
 
     /**
-     * Maneja el cambio de perfil
+     * Abre panel de personalización completa
      */
+    @FXML
+    private void openCustomizationPanel() {
+        try {
+            logger.info("Abriendo panel de personalización épico");
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/customization-panel.fxml"));
+            Parent root = loader.load();
+
+            Stage customizationStage = new Stage();
+            customizationStage.setTitle("🎨 Personalización Épica - Karrito Launcher");
+            customizationStage.initModality(Modality.APPLICATION_MODAL);
+            customizationStage.initStyle(StageStyle.DECORATED);
+            customizationStage.setResizable(true);
+
+            Scene scene = new Scene(root, 600, 700);
+
+            // Aplicar tema actual al panel
+            themeManager.registerScene(scene);
+            customizationService.registerScene(scene);
+
+            customizationStage.setScene(scene);
+            customizationStage.show();
+
+            logger.info("Panel de personalización abierto exitosamente");
+
+        } catch (IOException e) {
+            logger.error("Error al abrir panel de personalización", e);
+            showError("Error", "No se pudo abrir el panel de personalización: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Muestra configuración tradicional
+     */
+    private void showTraditionalSettings() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Información del Sistema");
+        alert.setHeaderText("Estado del Launcher");
+
+        StringBuilder info = new StringBuilder();
+        info.append("=== KARRITO LAUNCHER ===\n");
+        info.append("Versión: ").append(config.getApplication().getLauncherVersion()).append("\n\n");
+        info.append("=== PERSONALIZACIÓN ===\n");
+        info.append(themeManager.getThemeInfo()).append("\n");
+        info.append(backgroundManager.getBackgroundInfo()).append("\n");
+        info.append(customizationService.getCustomizationInfo()).append("\n");
+        info.append("\n=== ATAJOS DE TECLADO ===\n");
+        info.append("F1: Personalización completa\n");
+        info.append("F2: Cambiar tema\n");
+        info.append("F3: Cambiar fondo\n");
+        info.append("F5: Refrescar\n");
+        info.append("Ctrl+Esc: Salir\n");
+
+        alert.setContentText(info.toString());
+        alert.showAndWait();
+    }
+
+    /**
+     * Refresca el launcher
+     */
+    private void refreshLauncher() {
+        logger.info("Refrescando launcher...");
+
+        // Refresar temas
+        themeManager.refreshTheme();
+
+        // Recargar perfiles
+        loadInitialData();
+
+        showQuickNotification("¡Launcher refrescado!");
+    }
+
+    /**
+     * Muestra notificación rápida
+     */
+    private void showQuickNotification(String message) {
+        String originalText = statusLabel.getText();
+        statusLabel.setText("✨ " + message);
+        statusLabel.getStyleClass().add("notification-glow");
+
+        // Restaurar después de 3 segundos
+        Platform.runLater(() -> {
+            CompletableFuture.delayedExecutor(3, java.util.concurrent.TimeUnit.SECONDS)
+                    .execute(() -> Platform.runLater(() -> {
+                        statusLabel.setText(originalText);
+                        statusLabel.getStyleClass().remove("notification-glow");
+                    }));
+        });
+    }
+
+    // ===============================================
+    // MÉTODOS ORIGINALES MEJORADOS
+    // ===============================================
+
     private void onProfileChanged(UserProfile profile) {
-        logger.debug("Cambiando a perfil: {}", profile.getName());
+        logger.debug("Cambiando a perfil épico: {}", profile.getName());
 
         currentProfile = profile;
         userAuthenticated = false;
 
-        // Actualizar UI según el tipo de perfil
         updateUIForProfile(profile);
 
-        // Establecer como perfil activo
         if (profile.getId() != null) {
             profileManagerService.setActiveProfile(profile.getId())
-                    .thenRun(() -> {
-                        Platform.runLater(() -> {
-                            statusLabel.setText("Perfil activo: " + profile.getDisplayName());
-                        });
-                    })
+                    .thenRun(() -> Platform.runLater(() -> {
+                        showQuickNotification("Perfil activo: " + profile.getDisplayName() + " 🎭");
+                    }))
                     .exceptionally(throwable -> {
                         Platform.runLater(() -> {
                             logger.error("Error al establecer perfil activo", throwable);
@@ -209,68 +506,61 @@ public class MainController {
         }
     }
 
-    /**
-     * Actualiza la UI según el perfil seleccionado
-     */
     private void updateUIForProfile(UserProfile profile) {
         if (profile.getProfileType() == UserProfile.ProfileType.OFFLINE) {
-            // Perfil offline - mostrar campo de usuario
             usernameField.setVisible(true);
             usernameField.setDisable(false);
             usernameField.setText(profile.getMinecraftUsername() != null ?
                     profile.getMinecraftUsername() : "");
-            loginButton.setText("Usar Offline");
+            loginButton.setText("🔓 Modo Offline");
         } else {
-            // Perfil online - ocultar campo de usuario
             usernameField.setVisible(false);
             usernameField.setDisable(true);
-            loginButton.setText("Iniciar Sesión");
+            loginButton.setText("🔐 Iniciar Sesión");
         }
 
-        // Actualizar información del perfil
         updateProfileInfo(profile);
         updatePlayButtonState();
     }
 
-    /**
-     * Actualiza la información mostrada del perfil
-     */
     private void updateProfileInfo(UserProfile profile) {
         StringBuilder info = new StringBuilder();
-        info.append("Perfil: ").append(profile.getDisplayName());
-        info.append(" | Tipo: ").append(profile.getProfileType().getValue());
-        info.append(" | Memoria: ").append(profile.getMinMemoryMb()).append("-").append(profile.getMaxMemoryMb()).append("MB");
+        info.append("🎭 ").append(profile.getDisplayName());
+        info.append(" | 🔧 ").append(profile.getProfileType().getValue());
+        info.append(" | 🧠 ").append(profile.getMinMemoryMb()).append("-").append(profile.getMaxMemoryMb()).append("MB");
 
         profileInfoLabel.setText(info.toString());
     }
 
-    /**
-     * Actualiza el estado del botón de jugar
-     */
     private void updatePlayButtonState() {
         boolean canPlay = false;
 
         if (currentProfile != null) {
             if (currentProfile.getProfileType() == UserProfile.ProfileType.OFFLINE) {
-                // Para offline, necesita username
                 String username = usernameField.getText().trim();
                 canPlay = !username.isEmpty() && userAuthenticated;
             } else {
-                // Para online, necesita autenticación
                 canPlay = userAuthenticated;
             }
         }
 
         playButton.setDisable(!canPlay);
+
+        // Efecto visual dinámico
+        if (canPlay) {
+            playButton.getStyleClass().add("ready-to-play");
+        } else {
+            playButton.getStyleClass().remove("ready-to-play");
+        }
     }
 
     @FXML
     private void onLoginButtonClick(ActionEvent event) {
-        logger.info("Botón de login presionado para perfil: {}",
+        logger.info("🔐 Autenticación iniciada para perfil: {}",
                 currentProfile != null ? currentProfile.getName() : "ninguno");
 
         if (currentProfile == null) {
-            statusLabel.setText("Selecciona un perfil primero");
+            showQuickNotification("⚠️ Selecciona un perfil primero");
             return;
         }
 
@@ -278,26 +568,22 @@ public class MainController {
 
         if (currentProfile.getProfileType() == UserProfile.ProfileType.OFFLINE) {
             if (username.isEmpty()) {
-                statusLabel.setText("Ingresa un nombre de usuario para modo offline");
+                showQuickNotification("⚠️ Ingresa tu nombre de guerrero");
                 return;
             }
         }
 
-        // Deshabilitar UI durante autenticación
         setUIEnabled(false);
-        statusLabel.setText("Autenticando...");
+        statusLabel.setText("🔐 Autenticando guerrero...");
 
-        // Realizar autenticación en hilo separado
         CompletableFuture.runAsync(() -> {
             try {
                 boolean success;
 
                 if (currentProfile.getProfileType() == UserProfile.ProfileType.OFFLINE) {
-                    // Autenticación offline (siempre exitosa si hay username)
                     success = !username.isEmpty();
-                    Thread.sleep(500); // Simular delay mínimo
+                    Thread.sleep(800); // Efecto dramático
                 } else {
-                    // Autenticación online (Microsoft/Mojang)
                     success = launcherService.authenticateUser(username, "");
                 }
 
@@ -306,19 +592,18 @@ public class MainController {
                         userAuthenticated = true;
 
                         if (currentProfile.getProfileType() == UserProfile.ProfileType.OFFLINE) {
-                            statusLabel.setText("Modo offline listo: " + username);
+                            showQuickNotification("✅ Guerrero " + username + " listo para la batalla!");
 
-                            // Actualizar username en el perfil si cambió
                             if (!username.equals(currentProfile.getMinecraftUsername())) {
                                 currentProfile.setMinecraftUsername(username);
                                 saveProfileAsync(currentProfile);
                             }
                         } else {
-                            statusLabel.setText("Autenticación exitosa: " + currentProfile.getDisplayName());
+                            showQuickNotification("✅ Autenticación épica completada!");
                         }
                     } else {
                         userAuthenticated = false;
-                        statusLabel.setText("Error de autenticación");
+                        showQuickNotification("❌ Error de autenticación");
                     }
 
                     updatePlayButtonState();
@@ -328,7 +613,7 @@ public class MainController {
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     userAuthenticated = false;
-                    statusLabel.setText("Error durante la autenticación: " + e.getMessage());
+                    showQuickNotification("💥 Error durante la autenticación");
                     updatePlayButtonState();
                     setUIEnabled(true);
                     logger.error("Error en autenticación", e);
@@ -339,23 +624,20 @@ public class MainController {
 
     @FXML
     private void onPlayButtonClick(ActionEvent event) {
-        logger.info("Botón de jugar presionado para perfil: {}", currentProfile.getName());
+        logger.info("🚀 ¡INICIANDO AVENTURA ÉPICA!");
 
         if (currentProfile == null || !userAuthenticated) {
-            statusLabel.setText("Autentícate primero");
+            showQuickNotification("⚠️ Autentícate primero, guerrero");
             return;
         }
 
-        // Deshabilitar UI durante lanzamiento
         setUIEnabled(false);
         downloadProgress.setVisible(true);
         downloadProgress.setProgress(0.0);
 
-        // Obtener username efectivo
         String effectiveUsername = currentProfile.getProfileType() == UserProfile.ProfileType.OFFLINE ?
                 usernameField.getText().trim() : currentProfile.getMinecraftUsername();
 
-        // Iniciar proceso de lanzamiento
         CompletableFuture.runAsync(() -> {
             try {
                 launcherService.downloadGameFiles(new LauncherService.ProgressCallback() {
@@ -363,26 +645,25 @@ public class MainController {
                     public void onProgress(double progress, String message) {
                         Platform.runLater(() -> {
                             downloadProgress.setProgress(progress);
-                            statusLabel.setText(message);
+                            statusLabel.setText("🔄 " + message);
                         });
                     }
 
                     @Override
                     public void onComplete() {
                         Platform.runLater(() -> {
-                            statusLabel.setText("Iniciando Minecraft...");
+                            statusLabel.setText("🚀 Iniciando aventura épica...");
 
                             try {
                                 launcherService.launchGame(effectiveUsername, config.getGame().getDefaultVersionType());
 
-                                statusLabel.setText("¡Minecraft iniciado!");
+                                showQuickNotification("🎮 ¡Aventura iniciada! ¡Que tengas épicas batallas!");
                                 downloadProgress.setVisible(false);
 
-                                // Si está configurado, cerrar launcher
                                 if (config.getApplication().isCloseLauncherOnGameStart()) {
                                     Platform.runLater(() -> {
                                         try {
-                                            Thread.sleep(2000);
+                                            Thread.sleep(3000);
                                             Platform.exit();
                                         } catch (InterruptedException e) {
                                             Thread.currentThread().interrupt();
@@ -392,7 +673,7 @@ public class MainController {
 
                             } catch (Exception e) {
                                 logger.error("Error al lanzar el juego", e);
-                                statusLabel.setText("Error al iniciar Minecraft: " + e.getMessage());
+                                statusLabel.setText("💥 Error al iniciar aventura");
                             } finally {
                                 setUIEnabled(true);
                             }
@@ -402,7 +683,7 @@ public class MainController {
                     @Override
                     public void onError(String error) {
                         Platform.runLater(() -> {
-                            statusLabel.setText("Error: " + error);
+                            statusLabel.setText("💥 Error: " + error);
                             downloadProgress.setVisible(false);
                             setUIEnabled(true);
                         });
@@ -412,7 +693,7 @@ public class MainController {
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     logger.error("Error durante el lanzamiento", e);
-                    statusLabel.setText("Error: " + e.getMessage());
+                    statusLabel.setText("💥 Error: " + e.getMessage());
                     downloadProgress.setVisible(false);
                     setUIEnabled(true);
                 });
@@ -422,28 +703,23 @@ public class MainController {
 
     @FXML
     private void onCreateProfileButtonClick(ActionEvent event) {
-        logger.info("Creando nuevo perfil");
-
-        // Por ahora, crear un perfil simple
-        // TODO: Abrir diálogo de creación de perfil
+        logger.info("➕ Creando nuevo perfil épico");
         createSimpleProfile();
     }
 
     @FXML
     private void onSettingsButtonClick(ActionEvent event) {
-        logger.info("Abriendo configuración");
-
-        // TODO: Abrir ventana de configuración
-        statusLabel.setText("Configuración próximamente...");
+        openCustomizationPanel();
     }
 
-    /**
-     * Crea un perfil simple para demostración
-     */
+    // ===============================================
+    // MÉTODOS DE UTILIDAD
+    // ===============================================
+
     private void createSimpleProfile() {
         TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Nuevo Perfil");
-        dialog.setHeaderText("Crear Nuevo Perfil");
+        dialog.setTitle("🎭 Nuevo Perfil Épico");
+        dialog.setHeaderText("Crear Nuevo Guerrero");
         dialog.setContentText("Nombre del perfil:");
 
         Optional<String> result = dialog.showAndWait();
@@ -454,13 +730,13 @@ public class MainController {
                             Platform.runLater(() -> {
                                 profiles.add(profile);
                                 profileSelector.setValue(profile);
-                                statusLabel.setText("Perfil '" + profile.getDisplayName() + "' creado");
+                                showQuickNotification("🎭 Guerrero '" + profile.getDisplayName() + "' creado");
                             });
                         })
                         .exceptionally(throwable -> {
                             Platform.runLater(() -> {
                                 logger.error("Error al crear perfil", throwable);
-                                showError("Error", "No se pudo crear el perfil: " + throwable.getMessage());
+                                showError("Error", "No se pudo crear el guerrero: " + throwable.getMessage());
                             });
                             return null;
                         });
@@ -468,9 +744,6 @@ public class MainController {
         });
     }
 
-    /**
-     * Guarda un perfil de forma asíncrona
-     */
     private void saveProfileAsync(UserProfile profile) {
         profileManagerService.updateProfile(profile)
                 .exceptionally(throwable -> {
@@ -481,9 +754,6 @@ public class MainController {
                 });
     }
 
-    /**
-     * Habilita/deshabilita la UI
-     */
     private void setUIEnabled(boolean enabled) {
         profileSelector.setDisable(!enabled);
         usernameField.setDisable(!enabled || currentProfile == null ||
@@ -499,9 +769,6 @@ public class MainController {
         }
     }
 
-    /**
-     * Muestra un error en diálogo
-     */
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -514,9 +781,18 @@ public class MainController {
      * Método llamado cuando la aplicación se cierra
      */
     public void shutdown() {
-        logger.info("Cerrando controlador principal");
+        logger.info("🔥 Cerrando launcher épico...");
 
         try {
+            if (customizationService != null) {
+                customizationService.shutdown();
+            }
+            if (themeManager != null) {
+                themeManager.shutdown();
+            }
+            if (backgroundManager != null) {
+                backgroundManager.shutdown();
+            }
             if (profileManagerService != null) {
                 profileManagerService.shutdown();
             }
@@ -527,12 +803,14 @@ public class MainController {
                 databaseManager.close();
             }
         } catch (Exception e) {
-            logger.error("Error durante el cierre", e);
+            logger.error("Error durante el cierre épico", e);
         }
+
+        logger.info("🌟 ¡Hasta la próxima aventura!");
     }
 
     /**
-     * Cell factory para mostrar perfiles en el ComboBox
+     * Cell factory para mostrar perfiles épicos
      */
     private static class ProfileListCell extends ListCell<UserProfile> {
         @Override
@@ -543,7 +821,12 @@ public class MainController {
                 setText(null);
                 setGraphic(null);
             } else {
-                setText(profile.getDisplayName() + " (" + profile.getProfileType().getValue() + ")");
+                String emoji = switch (profile.getProfileType()) {
+                    case OFFLINE -> "🎮";
+                    case MICROSOFT -> "🏢";
+                    case MOJANG -> "🟢";
+                };
+                setText(emoji + " " + profile.getDisplayName() + " (" + profile.getProfileType().getValue() + ")");
             }
         }
     }
