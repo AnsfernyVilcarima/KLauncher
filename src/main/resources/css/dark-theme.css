@@ -1,0 +1,319 @@
+/* ===============================================
+   KARRITO LAUNCHER - DARK THEME (STABLE)
+   Simplified CSS without circular references
+   =============================================== */
+
+/* Background principal */
+.root {
+    -fx-background-color: #1A1A1A;
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+    -fx-font-size: 12px;
+}
+
+/* VBox principal */
+VBox {
+    -fx-background-color: #1A1A1A;
+}
+
+/* ===============================================
+   LABELS Y TEXTO
+   =============================================== */
+
+.label {
+    -fx-text-fill: #FFFFFF;
+}
+
+.label:disabled {
+    -fx-text-fill: #707070;
+}
+
+/* Título principal */
+#welcomeText {
+    -fx-text-fill: #00BCD4;
+    -fx-effect: dropshadow(gaussian, rgba(0,188,212,0.3), 10, 0.3, 0, 0);
+}
+
+/* Información del perfil */
+#profileInfoLabel {
+    -fx-text-fill: #B0B0B0;
+    -fx-font-style: italic;
+}
+
+/* Label de estado */
+#statusLabel {
+    -fx-text-fill: #B0B0B0;
+    -fx-font-weight: bold;
+}
+
+/* ===============================================
+   BOTONES
+   =============================================== */
+
+.button {
+    -fx-background-color: #2D2D2D;
+    -fx-text-fill: #FFFFFF;
+    -fx-border-color: #404040;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0.2, 0, 2);
+    -fx-cursor: hand;
+    -fx-padding: 8px 16px;
+}
+
+.button:hover {
+    -fx-background-color: #404040;
+    -fx-border-color: #606060;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 8, 0.3, 0, 3);
+}
+
+.button:pressed {
+    -fx-background-color: #0097A7;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 3, 0.4, 0, 1);
+}
+
+.button:disabled {
+    -fx-background-color: #333333;
+    -fx-text-fill: #707070;
+    -fx-border-color: #2A2A2A;
+    -fx-effect: none;
+}
+
+/* Botón principal de jugar */
+#playButton {
+    -fx-background-color: linear-gradient(to bottom, #00BCD4, #00ACC1);
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-border-color: #00BCD4;
+    -fx-effect: dropshadow(gaussian, rgba(0,188,212,0.5), 15, 0.5, 0, 0);
+}
+
+#playButton:hover {
+    -fx-background-color: linear-gradient(to bottom, #00ACC1, #00BCD4);
+    -fx-effect: dropshadow(gaussian, rgba(0,188,212,0.7), 20, 0.7, 0, 0);
+}
+
+#playButton:pressed {
+    -fx-background-color: linear-gradient(to bottom, #0097A7, #00ACC1);
+}
+
+#playButton:disabled {
+    -fx-background-color: #555555;
+    -fx-text-fill: #888888;
+    -fx-effect: none;
+}
+
+/* Botón de configuración */
+#settingsButton {
+    -fx-background-color: transparent;
+    -fx-border-color: #404040;
+    -fx-background-radius: 50%;
+    -fx-border-radius: 50%;
+    -fx-font-size: 14px;
+}
+
+#settingsButton:hover {
+    -fx-background-color: #2D2D2D;
+}
+
+/* Botón de crear perfil */
+#createProfileButton {
+    -fx-background-color: #4CAF50;
+    -fx-border-color: #4CAF50;
+    -fx-background-radius: 50%;
+    -fx-border-radius: 50%;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+}
+
+#createProfileButton:hover {
+    -fx-background-color: #66BB6A;
+}
+
+/* ===============================================
+   CAMPOS DE TEXTO
+   =============================================== */
+
+.text-field {
+    -fx-background-color: #2D2D2D;
+    -fx-text-fill: #FFFFFF;
+    -fx-border-color: #404040;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px 12px;
+    -fx-font-size: 12px;
+}
+
+.text-field:focused {
+    -fx-border-color: #00BCD4;
+    -fx-border-width: 2px;
+    -fx-effect: dropshadow(gaussian, rgba(0,188,212,0.5), 10, 0.5, 0, 0);
+}
+
+.text-field:disabled {
+    -fx-background-color: #333333;
+    -fx-text-fill: #707070;
+    -fx-border-color: #2A2A2A;
+}
+
+/* Placeholder text */
+.text-field .prompt-text {
+    -fx-fill: #707070;
+}
+
+/* ===============================================
+   COMBOBOX
+   =============================================== */
+
+.combo-box {
+    -fx-background-color: #2D2D2D;
+    -fx-border-color: #404040;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+}
+
+.combo-box:hover {
+    -fx-border-color: #606060;
+}
+
+.combo-box:focused {
+    -fx-border-color: #00BCD4;
+    -fx-border-width: 2px;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.combo-box .arrow {
+    -fx-background-color: #B0B0B0;
+}
+
+.combo-box .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #FFFFFF;
+}
+
+/* Dropdown del ComboBox */
+.combo-box-popup .list-view {
+    -fx-background-color: #2D2D2D;
+    -fx-border-color: #404040;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0.3, 0, 5);
+}
+
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #FFFFFF;
+    -fx-padding: 8px 12px;
+}
+
+.combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: #404040;
+}
+
+.combo-box-popup .list-view .list-cell:selected {
+    -fx-background-color: #00BCD4;
+    -fx-text-fill: white;
+}
+
+/* ===============================================
+   PROGRESS BAR
+   =============================================== */
+
+.progress-bar {
+    -fx-background-color: #2D2D2D;
+    -fx-border-color: #404040;
+    -fx-border-width: 1px;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-padding: 2px;
+}
+
+.progress-bar .bar {
+    -fx-background-color: linear-gradient(to right, #00BCD4, #00ACC1);
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0,188,212,0.3), 5, 0.3, 0, 0);
+}
+
+.progress-bar:indeterminate .bar {
+    -fx-background-color: linear-gradient(to right, #00BCD4, #00ACC1, #00BCD4);
+}
+
+/* ===============================================
+   SEPARADORES
+   =============================================== */
+
+.separator .line {
+    -fx-border-color: #404040;
+    -fx-border-width: 0.5px;
+    -fx-opacity: 0.5;
+}
+
+/* ===============================================
+   TOOLTIP
+   =============================================== */
+
+.tooltip {
+    -fx-background-color: #404040;
+    -fx-text-fill: #FFFFFF;
+    -fx-border-color: #404040;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-font-size: 11px;
+    -fx-padding: 6px 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0.4, 0, 2);
+}
+
+/* ===============================================
+   ALERTAS Y DIÁLOGOS
+   =============================================== */
+
+.dialog-pane {
+    -fx-background-color: #1A1A1A;
+    -fx-border-color: #404040;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 20, 0.4, 0, 5);
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: #2D2D2D;
+}
+
+.dialog-pane .content {
+    -fx-background-color: #1A1A1A;
+}
+
+.dialog-pane .button-bar .button {
+    -fx-min-width: 80px;
+}
+
+/* ===============================================
+   SCROLLBAR
+   =============================================== */
+
+.scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #404040;
+    -fx-background-radius: 5px;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #606060;
+}
+
+.scroll-bar .thumb:pressed {
+    -fx-background-color: #00BCD4;
+}
+
+.scroll-bar .track {
+    -fx-background-color: transparent;
+}

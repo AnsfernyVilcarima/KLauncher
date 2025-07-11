@@ -6,11 +6,6 @@
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
         </Console>
 
-        <!-- Archivo de log -->
-        <File name="FileAppender" fileName="logs/karrito-launcher.log">
-            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
-        </File>
-
         <!-- Archivo de log con rotación -->
         <RollingFile name="RollingFileAppender" fileName="logs/karrito-launcher.log"
                      filePattern="logs/karrito-launcher-%d{yyyy-MM-dd}-%i.log.gz">
